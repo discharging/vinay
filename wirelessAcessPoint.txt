@@ -1,0 +1,77 @@
+wireless acess point
+//Packages need for configuration
+//“dnsmasq” and “hostapd"
+
+//Check the status of the services
+
+//sudo systemctl start/restart/stop/status dnsmasq
+
+sudo systemctl status dnsmasq
+
+sudo systemctl status hostapd
+
+//If the services are not installed then
+//sudo apt-get install service_name
+sudo apt-get install hostapd
+sudo apt-get install dnsmasq
+
+//Stop the services before configuration
+sudo systemctl stop dnsmasq
+sudo systemctl stop hostapd
+
+//Configure static ip address
+
+//Network address 192.168.1.0 
+//static ip address 192.168.1.1
+//Range of ips 192.168.1.2 to 192.168.1.10
+
+sudo nano /etc/dhcpcd.conf
+//It will open the file
+//Add following lines at the end of the file
+interface wlan0
+static ip_address=192.168.1.1/24 
+
+//^x for exit
+
+//ip address and netmask - 192.168.1.1 255.255.255.0
+//ip address in cidr notation - 192.168.1.1/24
+
+//Restart the dhcp service
+sudo service dhcpcd restart
+
+//Configure dhcp server
+sudo nano /etc/dnsmasq.conf
+//first ip of the range, last ip of the range, netmask, time
+dhcp-range = 192.168.1.2, 192.168.1.10, 255.255.255.0,24h
+//^x - exit
+
+//Configure wireless access point - hostapd for SSID and Password
+sudo nano /etc/hostapd/hostapd.conf
+
+//Chekc the following parameters
+ssid=piNetwork
+wpa_passphrase=123456
+
+//^x - exit
+
+//open the file
+sudo nano /etc/default/hostapd
+//find the line with daemon_conf
+
+
+//Start the corresponding services
+sudo systemctl start hostapd
+sudo systemctl start dnsmasq
+
+//Routing and masquerade for outbound traffic
+
+sudo nano /etc/sysctl.conf
+//Uncomment this line net.ipv4.ip_forward=1
+//Exit from the file
+
+
+//Give following command on terminal
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+//then save the Iptables rule using:
+sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
